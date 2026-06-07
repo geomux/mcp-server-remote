@@ -1,0 +1,14 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "mcp-server-remote"
+version = "0.0.1"
+description = "MCP server that serves a remote MCP client."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+
+[project.urls]
+Homepage = "https://github.com/geomux/mcp-server-remote"
