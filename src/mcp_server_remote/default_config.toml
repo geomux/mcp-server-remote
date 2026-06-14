@@ -1,0 +1,40 @@
+# mcp-server-remote configuration
+
+# --- SETUP BELOW ---
+### This default file was created on first package run.
+### Edit the values below, save, and run the package again to begin.
+
+# [[server]]
+# name = "name of remote machine"
+# url = "address to remote machine server"
+# token = "bearer token for remote machine server"
+
+[server]
+name = "Box_1"
+host = "127.0.0.1"
+port = 9000
+path = "/mcp"
+
+[auth]
+# generate token using: openssl rand -hex 32
+# provide token to client console config for this server
+token = "paste your token here"
+# client console elastic IP and/or domain name
+allowed_origins = ["123.456.789.10", "https://your-domain"]
+
+[tools] # configurable tool permissions (uses principle of least privileged)
+allowed_roots = ["/*"]
+allowed_commands = [
+    "df -h",
+    "free -h",
+    "lscpu",
+    "ls -1",
+    "ls -a",
+    "cd",
+    "cd ~"
+    ]
+# require human [y/n] approval on client side before any tool tagged destructive runs
+confirm_destructure_actions = true
+
+
+
