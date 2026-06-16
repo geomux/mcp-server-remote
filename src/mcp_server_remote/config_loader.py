@@ -20,7 +20,7 @@ def config_create() -> Path:
     config_file = config_path()
     if not config_file.exists():
         config_file.parent.mkdir(parents=True, exist_ok=True)
-        template = files("mcp_server_remote").joinpath("default_config.toml")
+        template = files("mcp_server_remote").joinpath("config_default.toml")
         text = template.read_text()
         config_file.write_text(text)
         config_file.chmod(0o600) # owner access only, security concerns as token lives in this file
