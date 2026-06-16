@@ -11,7 +11,7 @@ APP_NAME = "mcp-server-remote"
 
 ### Defines destination filepath for Config File
 def config_path() -> Path:
-    folder = Path(user_config_dir(APP_NAME, appauthor=False)) # appauthor=False stops Windows from adding an extra folder.
+    folder = Path(user_config_dir(APP_NAME, appauthor=False)) # appauthor=False stops Windows from adding an ewhat is the factMCP schema for tools? is sxtra folder.
     file = folder / "config.toml"
     return file
 
@@ -36,32 +36,15 @@ def config_load() -> dict:
         config_dictionary = tomllib.load(f)
     return config_dictionary
 
-### User chooses an active server from Config File
-def get_active_server(config_dictionary: dict) -> dict:
-    available_servers = config_dictionary["server"]
-    if len(available_servers) == 1:
-        active_server = available_servers[0]
-        return active_server
-    else:
-        print("_" * 50)
-        print(f"\nMultiple Servers Available: ")
-        for i, server in enumerate(available_servers, start=1):
-            print(f"{i}. {server['name']} @ {server['url']}")
-        print("_" * 50)
-        active_server = input(f"\nConnect to a server. Enter number now: ")
-        active_server = active_server.strip()
-        server_number = int(active_server) - 1 # because Python indexes start at 0
-        if server_number < 0 or server_number >= len(available_servers):
-            print("Enter a listed server number.")
-            sys.exit(1)
-        return available_servers[server_number]
-
 if __name__ == "__main__":
     config = config_load()
     server = get_active_server(config)
     print("_" * 50)
     print(f"Server Config Loaded.")
+    print(f"Name: {server['name']}")
+    print(f"Destination: {server['host']}:{server['port']}{server['path']}")
     print(f"Active Server: {server['name']} @ {server['url']}")
+    print("_" * 50)
 
 
 
