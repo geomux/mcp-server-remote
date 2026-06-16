@@ -1,6 +1,8 @@
 # config_loader.py
 # Finds, creates, and loads the user config.toml file for remote server access
 
+import os
+import platform
 import sys
 import tomllib
 from pathlib import Path
@@ -11,7 +13,7 @@ APP_NAME = "mcp-server-remote"
 
 ### Defines destination filepath for Config File
 def config_path() -> Path:
-    folder = Path(user_config_dir(APP_NAME, appauthor=False)) # appauthor=False stops Windows from adding an ewhat is the factMCP schema for tools? is sxtra folder.
+    folder = Path(user_config_dir(APP_NAME, appauthor=False)) # appauthor=False stops Windows from adding an extra folder
     file = folder / "config.toml"
     return file
 
@@ -34,16 +36,26 @@ def config_load() -> dict:
     config_file = config_create()
     with open(config_file, "rb") as f: # note that tomllib needs to read in binary, hence "rb"
         config_dictionary = tomllib.load(f)
+    # Configure machine root path allowed across multiple operating systems
+    allowed_roots = config_dictionary["tools"]["allowed_roots"]
+    if "*" in allowed_roots:
+        operatingsystem_root = os.path.abspath(os.sep)
+        config_dictionary["tools"]["allowed_roots"] = [operatingsystem_root]
+    # Configure machine commands allowed across multiple operating systems
+    system_name = platofmr.system()
+    os_lookup = {"Linux": "linux", "Windows": "windows", "Darwin": "macos"}
+    os_type = os_lookup.get(system_name, "unknown")
+    allowed_commands = config_dictionary["tools"].get("commands, {}")
+    config_dictionary["tools"]["allowed commands"] = allowed_commands.get(os_type, [])
     return config_dictionary
 
 if __name__ == "__main__":
     config = config_load()
-    server = get_active_server(config)
+    server = config["server"]
     print("_" * 50)
     print(f"Server Config Loaded.")
     print(f"Name: {server['name']}")
     print(f"Destination: {server['host']}:{server['port']}{server['path']}")
-    print(f"Active Server: {server['name']} @ {server['url']}")
     print("_" * 50)
 
 

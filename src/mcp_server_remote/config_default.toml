@@ -4,37 +4,119 @@
 ### This default file was created on first package run.
 ### Edit the values below, save, and run the package again to begin.
 
-# [[server]]
-# name = "name of remote machine"
-# url = "address to remote machine server"
-# token = "bearer token for remote machine server"
-
 [server]
-name = "Box_1"
-host = "127.0.0.1"
-port = 9000
-path = "/mcp"
+name = "Box_1"      # Label for this machine
+host = "127.0.0.1"  # IP/Domain for this machine
+port = 9000         # Choose port nginx proxies to
+path = "/mcp"       # Leave this alone. /mcp is default for dependencies.
 
 [auth]
 # generate token using: openssl rand -hex 32
-# provide token to client console config for this server
+# !IMPORTANT! provide token to client console config associated with this server
 token = "paste your token here"
 # client console elastic IP and/or domain name
 allowed_origins = ["123.456.789.10", "https://your-domain"]
 
 [tools] # configurable tool permissions (uses principle of least privileged)
-allowed_roots = ["/*"]
-allowed_commands = [
-    "df -h",
-    "free -h",
+# require human [y/n] approval on client side before any tool or command tagged destructive runs
+confirm_destructive_actions = true
+# "*" allows full machine control (REMOVE FOR XTRA SECURITY), "/123abc" specifies actual path
+allowed_roots = [
+    "*",
+    "/var/log"
+]
+
+[tools.commands]
+# allowed commands
+linux = [
+    # who/what am i
+    "hostname",
+    "whoami",
+    "id",
+    "uname -a",
+    "cat /etc/os-release",
+    "uptime",
+    "hostnamectl",
+    # cpu / memory / load
     "lscpu",
-    "ls -1",
-    "ls -a",
-    "cd",
-    "cd ~"
-    ]
-# require human [y/n] approval on client side before any tool tagged destructive runs
-confirm_destructure_actions = true
+    "nproc",
+    "free -h",
+    "vmstat",
+    "top -bn1",
+    # disk
+    "df -h",
+    "lsblk",
+    "mount",
+    # network
+    "ip a",
+    "ip route",
+    "ss -tuln",
+    # processes
+    "ps aux",
+    # services & logs (systemd)
+    "systemctl status",
+    "systemctl list-units --type=service",
+    "journalctl -n 50 --no-pager",
+    # packages
+    "dpkg -l",
+    # time
+    "date",
+    "timedatectl",
+    # sessions
+    "who",
+    "w",
+    "last",
+]
+
+windows = [
+    # who/what am i
+    "hostname",
+    "whoami",
+    "Get-ComputerInfo",
+    # cpu / memory
+    "Get-CimInstance Win32_Processor",
+    "Get-CimInstance Win32_OperatingSystem",
+    # disk
+    "Get-PSDrive -PSProvider FileSystem",
+    "Get-Volume",
+    # network
+    "Get-NetIPConfiguration",
+    "Get-NetTCPConnection -State Listen",
+    # processes & services
+    "Get-Process",
+    "Get-Service",
+    # time
+    "Get-Date",
+]
+
+macos = [
+    # who/what am i
+    "hostname",
+    "whoami",
+    "id",
+    "uname -a",
+    "sw_vers",
+    "uptime",
+    # cpu / memory
+    "sysctl -n hw.ncpu",
+    "sysctl -n hw.memsize",
+    "vm_stat",
+    "top -l 1",
+    "system_profiler SPHardwareDataType",
+    # disk
+    "df -h",
+    "diskutil list",
+    # network
+    "ifconfig",
+    "netstat -an",
+    "route -n get default",
+    "scutil --dns",
+    # processes & services
+    "ps aux",
+    "launchctl list",
+    # time
+    "date",
+]
 
 
 
