@@ -2,7 +2,7 @@
 # Finds, creates, and loads the user config.toml file for remote server access
 
 import os
-import platform
+# import platform
 import sys
 import tomllib
 from pathlib import Path
@@ -42,11 +42,11 @@ def config_load() -> dict:
         operatingsystem_root = os.path.abspath(os.sep)
         config_dictionary["tools"]["allowed_roots"] = [operatingsystem_root]
     # Configure machine commands allowed across multiple operating systems
-    system_name = platofmr.system()
+    system_name = platform.system()
     os_lookup = {"Linux": "linux", "Windows": "windows", "Darwin": "macos"}
     os_type = os_lookup.get(system_name, "unknown")
-    allowed_commands = config_dictionary["tools"].get("commands, {}")
-    config_dictionary["tools"]["allowed commands"] = allowed_commands.get(os_type, [])
+    allowed_commands = config_dictionary["tools"].get("commands", {})
+    config_dictionary["tools"]["allowed_commands"] = allowed_commands.get(os_type, [])
     return config_dictionary
 
 if __name__ == "__main__":
