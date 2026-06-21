@@ -34,8 +34,8 @@ def config_create() -> Path:
 ### Load settings from Config File into Python dictionary
 def config_load() -> dict:
     config_file = config_create()
-    with open(config_file, "rb") as f: # note that tomllib needs to read in binary, hence "rb"
-        config_dictionary = tomllib.load(f)
+    config_text = config_file.read_text(encoding="utf-8-sig")
+    config_dictionary = tomllib.loads(config_text)
     # Configure machine root path allowed across multiple operating systems
     allowed_roots = config_dictionary["tools"]["allowed_roots"]
     if "*" in allowed_roots:
