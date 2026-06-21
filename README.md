@@ -17,11 +17,12 @@ mcp-client-console <--> {mcp SDK} <--> * <--> auth.py <--> server.py <--> tools.
     :~$ mcp-server-remote
     
 ### Developers: install commands
-    git clone https://github.com/geomux/mcp-server-remote.git
-    cd mcp-server-remote
-    python3 -m venv .venv
-    source .venv/bin/activate
-    pip install -e .
+    :~$ git clone https://github.com/geomux/mcp-server-remote.git
+    :~$ cd mcp-server-remote
+    :~$ python3 -m venv .venv
+    :~$ source .venv/bin/activate
+    :~$ pip install -e .
+    :~$ mcp-server-remote
 
 ## User Guide | Configuration
 
