@@ -47,7 +47,7 @@ def register_tools(mcp_server, config):
 
 
     ### TEMP code for dev & testing, remove in prod
-    @mcp_server.tools
+    @mcp_server.tool
     def get_time() -> str:
         """Return the server's host machine current date and time"""
         date_time = datetime.now().isoformat(timespec="seconds")
