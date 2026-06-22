@@ -70,7 +70,7 @@ Confirm the MCP client is configured to connect to server.
 ## Project Status
 ## --
 - [x] Create MCP server repo
-- [ ] Connect to MCP client locally
+- [x] Connect to MCP client locally
 - [ ] Add additional tools to Tools.py
 - [ ] Connect to MCP server remotely with TLS + bearer auth
 
