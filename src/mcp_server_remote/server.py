@@ -23,7 +23,7 @@ def main():
     ### ---------------------------
     mcp_server = FastMCP(
         name=server["name"],
-        auth=build_auth(config)
+        auth=resolve_auth(config)
         )
 
     register_tools(mcp_server, config) # register available tools
