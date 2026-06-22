@@ -22,7 +22,7 @@ def register_tools(mcp_server, config):
         """Check if target_object filepath argument passed is under a root that is allowed to be acccessed"""
         for root in allowed_roots:
             resolved_root = Path(root).resolve()
-            if target_object.is_relative_to(resolved_root) # .is_relative_to() checks if filepath is under resolved_root path
+            if target_object.is_relative_to(resolved_root): # .is_relative_to() checks if filepath is under resolved_root path
                 return True
             return False
 
@@ -37,16 +37,18 @@ def register_tools(mcp_server, config):
         if not path_is_allowed(target_object, allowed_roots):
             return f"DENIED: {target_object} not within filepaths allowed by config."
         #
-        try:
-            text_read = target_object.read_text(encoding"utf-8")[MAX_READ_BYTES]
+        try: # error handling
+            text_read = target_object.read_text(encoding="utf-8")[MAX_READ_BYTES]
             return text_read
-        except f"ERROR: Cannot read file"
+        except:
+            return f"ERROR: Cannot read file"
 
 
 
 
     ### TEMP code for dev & testing, remove in prod
-    @mcp.toolsdef get_time() --> str:
+    @mcp_server.tools
+    def get_time() -> str:
         """Return the server's host machine current date and time"""
         date_time = datetime.now().isoformat(timespec="seconds")
         return date_time
