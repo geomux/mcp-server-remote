@@ -26,8 +26,11 @@ def config_create() -> Path:
         text = template.read_text()
         config_file.write_text(text)
         config_file.chmod(0o600) # owner access only, security concerns as token lives in this file
-        print(f"Created config: {config_file}")
-        print(f"Edit the values, save, and run the package again to begin.")
+        print("_"*50)
+        print("\n[ CONFIG CREATED ]")
+        print(f"\n{config_file}")
+        print(f"\nEdit the values, save, and run the package again to begin.")
+        print("_"*50)
         sys.exit(1)
     return config_file
 
