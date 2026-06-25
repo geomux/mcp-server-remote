@@ -1,6 +1,7 @@
 # mcp-server-remote
 
 MCP server that serves a remote MCP client, ready-to-run tools and preset configuration files. 
+*Intented for use within private network for Cybersecurity purposes*
 
 ## Remote MCP System Architecture Flowchart
 
