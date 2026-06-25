@@ -1,13 +1,14 @@
 # mcp-server-remote
 
 MCP server that serves a remote MCP client, ready-to-run tools and preset configuration files. 
-*Intented for use within private network for Cybersecurity purposes*
 
-## Remote MCP System Architecture Flowchart
+*Intented for use within private network for Cybersecurity purposes.*
+
+### Remote MCP System Architecture Flowchart
 
 {user} <--> mcp-client-console <--> network <--> {box} <--> mcp-server-remote <--> tools
 
-## mcp-server-remote Architecture Flowchart
+### mcp-server-remote Architecture Flowchart
 
 mcp-client-console <--> {mcp SDK} <--> * <--> auth.py <--> server.py <--> tools.py
 
