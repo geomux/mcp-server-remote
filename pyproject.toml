@@ -9,7 +9,7 @@ packages = ["src/mcp_server_remote"]
 # Config project stuff
 [project]
 name = "mcp-server-remote"
-version = "0.1.0"
+version = "0.2.0"
 description = "MCP server that serves a remote MCP client."
 readme = "README.md"
 license = "MIT"
