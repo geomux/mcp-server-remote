@@ -69,9 +69,9 @@ def register_tools(mcp_server, config):
 
         if complete_command.stderr:
             command_output += f"\n[stderr]\n{complete_command.stderr}"
-        if complete.returncode ~= 0:
+        if complete.returncode != 0:
             command_output += f"\n[exit code {complete_command.returncode}]"
-        reutrn command_output[:MAX_READ_BYTES] if command_output.strip() else "(no command output)"
+        return command_output[:MAX_READ_BYTES] if command_output.strip() else "(no command output)"
 
 
 
