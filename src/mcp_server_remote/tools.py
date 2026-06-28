@@ -4,7 +4,6 @@
 
 import shlex
 import subprocess
-from datetime import datetime # TEMP code for dev & testing, remove in prod
 from pathlib import Path
 
 # CONSTANTS
@@ -47,31 +46,61 @@ def register_tools(mcp_server, config):
 
     @mcp_server.tool
     def run_command(command: str) -> str:
-        """Run one allowed command on the host machine and return its output.
-        Only commands in the config allowed_commands list may be run.
-        Commands run must match allowed commands exactly- no extra arguments.
-        If a command is denied, tool will return list of allowed commands so an allowed one may be selected."""
-        command_selected = command.strip()
-        if command_selected not in allowed_commands:
+        """ Run one allowed command on the host machine and return its output.
+        The command's binary (first word) must be in the config allowed_commands list.
+        Flags and non-path arguments are passed through unchecked. Any argument that
+        looks like a filesystem path (starts with /, ~, or .) is checked against
+        allowed_roots. If a command or path is denied, tool will return why.
+        """
+        try:
+            tokens = shlex.split(command.strip())
+        except ValueError as error:
+            return f"ERROR: could not parse command: {error}"
+
+        if not tokens:
+            return "DENIED: empty command"
+
+        cmd_binary = tokens[0]
+        if cmd_binary not in allowed_commands:
             allowed_commands_string = ", ".join(allowed_commands)
-            return f"DENIED: '{command_selected}' is not allowed. Allowed commands: {allowed_commands_string}"
+            return f"DENIED: '{cmd_binary}' is not allowed. Allowed commands: {allowed_commands_string}"
+
+        # check to see if any arguments are paths/look like parths
+        for token in tokens[1:]:
+            if token.startswith("-"):
+                continue # argument is a flag
+            looks_like_path = (
+                "/" in token
+                or "\\" in token
+                or token.startswith("~")
+                or token.startswith(".")
+            )
+            if not looks_like_path:
+                continue # argument is not a path
+            target_object = Path(token).expanduser().resolve()
+            if not path_is_allowed(target_object, allowed_roots):
+                return f"DENIED: path '{target_object}' is not within filepaths allowed by config file."
+
         try:
             complete_command = subprocess.run(
-                shlex.split(command_selected),
-                capture_output = True,
-                text = True,
-                timeout=COMMAND_TIMEOUT_SECONDS,
+                    tokens,
+                    capture_output = True,
+                    text = True,
+                    timeout = COMMAND_TIMEOUT_SECONDS,
                 )
         except subprocess.TimeoutExpired:
-            return f"ERROR: '{command_selected}' timed out after {COMMAND_TIMEOUT_SECONDS}"
+            return f"ERROR: '{command}' timed out after {COMMAND_TIMEOUT_SECONDS} seconds."
+        except FileNotFoundError:
+            return f"ERROR: '{cmd_binary}' is allowed but not found on this remote machine."
 
-        command_output = complete_complete.stdout
+        command_output = complete_command.stdout
 
         if complete_command.stderr:
             command_output += f"\n[stderr]\n{complete_command.stderr}"
-        if complete.returncode != 0:
+        if complete_command.returncode != 0:
             command_output += f"\n[exit code {complete_command.returncode}]"
         return command_output[:MAX_READ_BYTES] if command_output.strip() else "(no command output)"
+
 
 
 
