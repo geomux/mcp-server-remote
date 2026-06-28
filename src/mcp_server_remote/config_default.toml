@@ -74,6 +74,7 @@ linux = [
     "du",
     "pwd",
     "which",
+    "find", # POSSIBLE BLACK SHEEP - bypasses a lot of security in limited access to filesystem
 ]
 
 windows = [
@@ -95,7 +96,7 @@ windows = [
     # time
     "Get-Date",
     # file inspection, ls/cat/dir/type resolve to these
-    "Get-ChildItem",
+    "Get-ChildItem", # POSSIBLE BLACK SHEEP - bypasses a lot of security in limited access to filesystem
     "Get-Content",
     "Select-String",
 ]
@@ -137,6 +138,7 @@ macos = [
     "du",
     "pwd",
     "which",
+    "find", # POSSIBLE BLACK SHEEP - bypasses a lot of security in limited access to filesystem
 ]
 
 
