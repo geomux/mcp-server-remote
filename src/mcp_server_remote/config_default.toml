@@ -29,36 +29,33 @@ allowed_roots = [
 [tools.commands]
 # allowed commands
 linux = [
-    # who/what am i
+    # who / what am i
     "hostname",
     "whoami",
     "id",
-    "uname -a",
-    "cat /etc/os-release",
+    "uname",
     "uptime",
     "hostnamectl",
     # cpu / memory / load
     "lscpu",
     "nproc",
-    "free -h",
+    "free",
     "vmstat",
-    "top -bn1",
+    "top",
     # disk
-    "df -h",
+    "df",
     "lsblk",
     "mount",
     # network
-    "ip a",
-    "ip route",
-    "ss -tuln",
+    "ip",
+    "ss",
     # processes
-    "ps aux",
+    "ps",
     # services & logs (systemd)
-    "systemctl status",
-    "systemctl list-units --type=service",
-    "journalctl -n 50 --no-pager",
+    "systemctl",
+    "journalctl",
     # packages
-    "dpkg -l",
+    "dpkg",
     # time
     "date",
     "timedatectl",
@@ -66,57 +63,80 @@ linux = [
     "who",
     "w",
     "last",
+    # file inspection, read-only readers, /etc/os-release via cat
+    "ls",
+    "cat",
+    "head",
+    "tail",
+    "grep",
+    "stat",
+    "wc",
+    "du",
+    "pwd",
+    "which",
 ]
 
 windows = [
-    # who/what am i
+    # who / what am i
     "hostname",
     "whoami",
     "Get-ComputerInfo",
-    # cpu / memory
-    "Get-CimInstance Win32_Processor",
-    "Get-CimInstance Win32_OperatingSystem",
+    # cpu / memory / os
+    "Get-CimInstance",
     # disk
-    "Get-PSDrive -PSProvider FileSystem",
+    "Get-PSDrive",
     "Get-Volume",
     # network
     "Get-NetIPConfiguration",
-    "Get-NetTCPConnection -State Listen",
+    "Get-NetTCPConnection",
     # processes & services
     "Get-Process",
     "Get-Service",
     # time
     "Get-Date",
+    # file inspection, ls/cat/dir/type resolve to these
+    "Get-ChildItem",
+    "Get-Content",
+    "Select-String",
 ]
 
 macos = [
-    # who/what am i
+    # who / what am i
     "hostname",
     "whoami",
     "id",
-    "uname -a",
+    "uname",
     "sw_vers",
     "uptime",
     # cpu / memory
-    "sysctl -n hw.ncpu",
-    "sysctl -n hw.memsize",
+    "sysctl",
     "vm_stat",
-    "top -l 1",
-    "system_profiler SPHardwareDataType",
+    "top",
+    "system_profiler",
     # disk
-    "df -h",
-    "diskutil list",
+    "df",
+    "diskutil",
     # network
     "ifconfig",
-    "netstat -an",
-    "route -n get default",
-    "scutil --dns",
+    "netstat",
+    "route",
+    "scutil",
     # processes & services
-    "ps aux",
-    "launchctl list",
+    "ps",
+    "launchctl",
     # time
     "date",
+    # file inspection
+    "ls",
+    "cat",
+    "head",
+    "tail",
+    "grep",
+    "stat",
+    "wc",
+    "du",
+    "pwd",
+    "which",
 ]
-
 
 
