@@ -31,7 +31,9 @@ def register_tools(mcp_server, config):
     ### -----------------
     @mcp_server.tool
     def read_file(filepath: str) -> str:
-        """Read a text file in (utf-8 format) from the host and return its values as a string"""
+        """
+            Read a file (in utf-8 format) from the host and return its values as a string
+        """
         # confirm object at filepath is allowed to be accessed
         target_object = Path(filepath).resolve()
         if not path_is_allowed(target_object, allowed_roots):
@@ -45,12 +47,28 @@ def register_tools(mcp_server, config):
             return f"ERROR: Cannot read {target_object}: {error}"
 
     @mcp_server.tool
+    def write_file(filepath: str, data_write: str | int | float) -> str:
+        """
+            Write to a file (in utf-8 format) on the host and return confirmation that the write was completed.
+        """
+        target_object = Path(filepath).resolve()
+        if not path_is_allowed(target_object, allowed_roots):
+            return f"DENIED: {target_object} not within filepaths allowed by config."
+        try:
+            with open(target_object, "w", encoding="utf-8") as f:
+                f.write(str(data_write)) # since data_write could be int/float, it must be converted to a string for open() to write to a file.
+        except FileNotFoundError:
+            return f"ERROR: {target_object} not found."
+        except Exception as error:
+            return f"ERROR: Cannot write to {target_object}: {error}"
+
+    @mcp_server.tool
     def run_command(command: str) -> str:
-        """ Run one allowed command on the host machine and return its output.
-        The command's binary (first word) must be in the config allowed_commands list.
-        Flags and non-path arguments are passed through unchecked. Any argument that
-        looks like a filesystem path (starts with /, ~, or .) is checked against
-        allowed_roots. If a command or path is denied, tool will return why.
+        """
+            Run one allowed command on the host machine and return its output.
+            NOTE: The command's binary (first word) must be in the config allowed_commands list.
+            NOTE: Flags and non-path arguments are passed through unchecked. Any argument that looks like a filesystem path (starts with /, ~, or .) is checked against allowed_roots.
+            NOTE: If a command or path is denied, tool will return why.
         """
         try:
             tokens = shlex.split(command.strip())
