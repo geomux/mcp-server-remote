@@ -57,10 +57,12 @@ def register_tools(mcp_server, config):
         try:
             with open(target_object, "w", encoding="utf-8") as f:
                 f.write(str(data_write)) # since data_write could be int/float, it must be converted to a string for open() to write to a file.
+            return f"OK: wrote {len(str(data_write))} characters to {target_object}."
         except FileNotFoundError:
             return f"ERROR: {target_object} not found."
         except Exception as error:
             return f"ERROR: Cannot write to {target_object}: {error}"
+        return f"OK: wrote {len(str(data_write))} characters to {target_object}."
 
     @mcp_server.tool
     def run_command(command: str) -> str:
