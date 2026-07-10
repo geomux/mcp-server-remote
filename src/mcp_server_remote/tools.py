@@ -2,9 +2,11 @@
 # Defines tools for the MCP server to run.
 # NOTE: MAJOR benefit from beefing up docstrings for LLM context since they are passed through the functions that define the tools
 
+import platform
 import shlex
 import subprocess
 from pathlib import Path
+from mcp_server_remote._vendor import toolshape
 
 # CONSTANTS
 COMMAND_TIMEOUT_SECONDS = 60    # max time elapsed running each command to protect from hung processes
@@ -14,7 +16,8 @@ MAX_READ_BYTES = 100_000        # max file read in one call to protect LLM conte
 ### all tools register on MCP server through register_tools()
 def register_tools(mcp_server, config):
     """Register MCP tools with MCP server instance and config file arguments"""
-    allowed_commands = config["tools"]["allowed_commands"]
+    os = {"Linux": "linux", "Windows": "windows", "Darwin": "macos"[platform.system()]}
+    allowed_commands = config["tools"]["commands"][os]
     allowed_roots = config["tools"]["allowed_roots"]
 
 
@@ -29,7 +32,7 @@ def register_tools(mcp_server, config):
     ### -----------------
     ### --- MCP Tools ---
     ### -----------------
-    @mcp_server.tool
+    @mcp_server.tool(description=toolshape.READ_FILE_DESCRIPTION)
     def read_file(filepath: str) -> str:
         """
             Read a file (in utf-8 format) from the host and return its values as a string
@@ -46,7 +49,7 @@ def register_tools(mcp_server, config):
         except Exception as error:
             return f"ERROR: Cannot read {target_object}: {error}"
 
-    @mcp_server.tool
+    @mcp_server.tool(description=toolshape.WRITE_FILE_DESCRIPTION)
     def write_file(filepath: str, data_write: str | int | float) -> str:
         """
             Write to a file (in utf-8 format) on the host and return confirmation that the write was completed.
@@ -64,7 +67,7 @@ def register_tools(mcp_server, config):
             return f"ERROR: Cannot write to {target_object}: {error}"
         return f"OK: wrote {len(str(data_write))} characters to {target_object}."
 
-    @mcp_server.tool
+    @mcp_server.tool(description=toolshape.RUN_COMMAND_DESCRIPTION)
     def run_command(command: str) -> str:
         """
             Run one allowed command on the host machine and return its output.
