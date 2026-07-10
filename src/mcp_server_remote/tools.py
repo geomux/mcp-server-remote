@@ -43,7 +43,11 @@ def register_tools(mcp_server, config):
             return f"DENIED: {target_object} not within filepaths allowed by config."
         try:
             text_read = target_object.read_text(encoding="utf-8",errors="replace")
-            return text_read[:MAX_READ_BYTES]
+            return toolshape.read_receipt(
+                target_object,
+                text_read[:MAX_READ_BYTES],
+                truncated=len(text_read) > MAX_READ_BYTES,
+                )
         except FileNotFoundError:
             return f"ERROR: {target_object} not found."
         except Exception as error:
@@ -60,12 +64,11 @@ def register_tools(mcp_server, config):
         try:
             with open(target_object, "w", encoding="utf-8") as f:
                 f.write(str(data_write)) # since data_write could be int/float, it must be converted to a string for open() to write to a file.
-            return f"OK: wrote {len(str(data_write))} characters to {target_object}."
+            return toolshape.write_receipt(target_object, len(str(data_write)))
         except FileNotFoundError:
             return f"ERROR: {target_object} not found."
         except Exception as error:
             return f"ERROR: Cannot write to {target_object}: {error}"
-        return f"OK: wrote {len(str(data_write))} characters to {target_object}."
 
     @mcp_server.tool(description=toolshape.RUN_COMMAND_DESCRIPTION)
     def run_command(command: str) -> str:
@@ -86,7 +89,7 @@ def register_tools(mcp_server, config):
         cmd_binary = tokens[0]
         if cmd_binary not in allowed_commands:
             allowed_commands_string = ", ".join(allowed_commands)
-            return f"DENIED: '{cmd_binary}' is not allowed. Allowed commands: {allowed_commands_string}"
+            return toolshape.denied(f"'{cmd_binary}' is not allowed.", allowed=allowed_commands)
 
         # check to see if any arguments are paths/look like parths
         for token in tokens[1:]:
@@ -112,17 +115,17 @@ def register_tools(mcp_server, config):
                     timeout = COMMAND_TIMEOUT_SECONDS,
                 )
         except subprocess.TimeoutExpired:
-            return f"ERROR: '{command}' timed out after {COMMAND_TIMEOUT_SECONDS} seconds."
+            return toolshape.error(f"'{command}' timed out after {COMMAND_TIMEOUT_SECONDS} seconds.")
         except FileNotFoundError:
             return f"ERROR: '{cmd_binary}' is allowed but not found on this remote machine."
 
-        command_output = complete_command.stdout
-
-        if complete_command.stderr:
-            command_output += f"\n[stderr]\n{complete_command.stderr}"
-        if complete_command.returncode != 0:
-            command_output += f"\n[exit code {complete_command.returncode}]"
-        return command_output[:MAX_READ_BYTES] if command_output.strip() else "(no command output)"
+        return toolshape.command_receipt(
+            command,
+            complete_command.returncode,
+            complete_command.stout[:MAX_READ_BYTES],
+            complete_command.stderr[:10_000]
+            truncated=len(complete_command.stdout) > MAX_READ_BYTES,
+            )
 
 
 
