@@ -16,8 +16,8 @@ MAX_READ_BYTES = 100_000        # max file read in one call to protect LLM conte
 ### all tools register on MCP server through register_tools()
 def register_tools(mcp_server, config):
     """Register MCP tools with MCP server instance and config file arguments"""
-    os = {"Linux": "linux", "Windows": "windows", "Darwin": "macos"[platform.system()]}
-    allowed_commands = config["tools"]["commands"][os]
+    os_key = {"Linux": "linux", "Windows": "windows", "Darwin": "macos"}[platform.system()]
+    allowed_commands = config["tools"]["commands"][os_key]
     allowed_roots = config["tools"]["allowed_roots"]
 
 
@@ -123,7 +123,7 @@ def register_tools(mcp_server, config):
             command,
             complete_command.returncode,
             complete_command.stout[:MAX_READ_BYTES],
-            complete_command.stderr[:10_000]
+            complete_command.stderr[:10_000],
             truncated=len(complete_command.stdout) > MAX_READ_BYTES,
             )
 
