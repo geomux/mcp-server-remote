@@ -122,6 +122,22 @@ def write_receipt(path, chars_written: int) -> str:
     )
 
 
+def mkdir_receipt(path, already_existed: bool = False) -> str:
+    """Shape a completed folder creation into a receipt that discourages confirm-loops.
+    path: the resolved folder path
+    already_existed: True when the folder was already there before the call
+    """
+    if already_existed:
+        return (
+            f"OK: folder {path} ALREADY EXISTS - nothing needed creating. "
+            "It is ready to use; do NOT call create_directory again for this path."
+        )
+    return (
+        f"OK: created folder {path} (any missing parent folders were created too). "
+        "The folder exists now - do NOT call create_directory again to confirm."
+    )
+
+
 def denied(reason: str, allowed=None) -> str:
     """Shape a policy refusal. Starts with DENIED: per the client prompt contract.
     reason: why the command or path was refused

@@ -10,29 +10,39 @@
 from mcp_server_remote._vendor.toolshape.receipt import command_receipt
 from mcp_server_remote._vendor.toolshape.receipt import read_receipt
 from mcp_server_remote._vendor.toolshape.receipt import write_receipt
+from mcp_server_remote._vendor.toolshape.receipt import mkdir_receipt
 from mcp_server_remote._vendor.toolshape.receipt import denied
 from mcp_server_remote._vendor.toolshape.receipt import error
 from mcp_server_remote._vendor.toolshape.receipt import NO_SHELL_HINT
 from mcp_server_remote._vendor.toolshape.descriptions import RUN_COMMAND_DESCRIPTION
+from mcp_server_remote._vendor.toolshape.descriptions import RUN_COMMAND_DESCRIPTION_WINDOWS
 from mcp_server_remote._vendor.toolshape.descriptions import READ_FILE_DESCRIPTION
 from mcp_server_remote._vendor.toolshape.descriptions import WRITE_FILE_DESCRIPTION
+from mcp_server_remote._vendor.toolshape.descriptions import CREATE_DIRECTORY_DESCRIPTION
 from mcp_server_remote._vendor.toolshape.descriptions import RUN_COMMAND_DESCRIPTION_VERBOSE
+from mcp_server_remote._vendor.toolshape.descriptions import RUN_COMMAND_DESCRIPTION_WINDOWS_VERBOSE
 from mcp_server_remote._vendor.toolshape.descriptions import READ_FILE_DESCRIPTION_VERBOSE
 from mcp_server_remote._vendor.toolshape.descriptions import WRITE_FILE_DESCRIPTION_VERBOSE
+from mcp_server_remote._vendor.toolshape.descriptions import CREATE_DIRECTORY_DESCRIPTION_VERBOSE
 
-__version__ = "0.1.1"
+__version__ = "0.2.0"
 
 __all__ = [
     "command_receipt",
     "read_receipt",
     "write_receipt",
+    "mkdir_receipt",
     "denied",
     "error",
     "NO_SHELL_HINT",
     "RUN_COMMAND_DESCRIPTION",
+    "RUN_COMMAND_DESCRIPTION_WINDOWS",
     "READ_FILE_DESCRIPTION",
     "WRITE_FILE_DESCRIPTION",
+    "CREATE_DIRECTORY_DESCRIPTION",
     "RUN_COMMAND_DESCRIPTION_VERBOSE",
+    "RUN_COMMAND_DESCRIPTION_WINDOWS_VERBOSE",
     "READ_FILE_DESCRIPTION_VERBOSE",
     "WRITE_FILE_DESCRIPTION_VERBOSE",
+    "CREATE_DIRECTORY_DESCRIPTION_VERBOSE",
 ]

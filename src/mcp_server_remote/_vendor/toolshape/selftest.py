@@ -7,6 +7,7 @@ import unittest
 from mcp_server_remote._vendor.toolshape.receipt import command_receipt
 from mcp_server_remote._vendor.toolshape.receipt import read_receipt
 from mcp_server_remote._vendor.toolshape.receipt import write_receipt
+from mcp_server_remote._vendor.toolshape.receipt import mkdir_receipt
 from mcp_server_remote._vendor.toolshape.receipt import denied
 from mcp_server_remote._vendor.toolshape.receipt import error
 from mcp_server_remote._vendor.toolshape.receipt import NO_SHELL_HINT
@@ -115,6 +116,21 @@ class WriteReceiptTests(unittest.TestCase):
         self.assertIn("do NOT call write_file again", receipt)
 
 
+class MkdirReceiptTests(unittest.TestCase):
+    def test_created_folder_confirms_and_discourages_retry(self):
+        receipt = mkdir_receipt("/tmp/new-folder")
+        self.assertTrue(receipt.startswith("OK:"))
+        self.assertIn("/tmp/new-folder", receipt)
+        self.assertIn("parent folders", receipt)
+        self.assertIn("do NOT call create_directory again", receipt)
+
+    def test_already_existing_folder_is_explicit_success(self):
+        receipt = mkdir_receipt("/tmp/old-folder", already_existed=True)
+        self.assertTrue(receipt.startswith("OK:"))
+        self.assertIn("ALREADY EXISTS", receipt)
+        self.assertIn("do NOT call create_directory again", receipt)
+
+
 ### -------------------------------
 ### --- DENIED / ERROR TESTS    ---
 ### -------------------------------
@@ -148,6 +164,8 @@ class PrefixContractTests(unittest.TestCase):
             read_receipt("/f", "x"),
             read_receipt("/f", ""),
             write_receipt("/f", 1),
+            mkdir_receipt("/f"),
+            mkdir_receipt("/f", already_existed=True),
             denied("nope"),
             error("bad"),
         ]
@@ -179,26 +197,49 @@ class DescriptionTests(unittest.TestCase):
         text = descriptions.WRITE_FILE_DESCRIPTION
         self.assertIn("DONE", text)
         self.assertIn("Never call write_file again", text)
+        self.assertIn("create_directory", text)
+
+    def test_create_directory_description_owns_folder_making(self):
+        text = descriptions.CREATE_DIRECTORY_DESCRIPTION
+        self.assertIn("folder", text)
+        self.assertIn("write_file", text)
+        self.assertIn("never call again", text.lower())
+
+    def test_windows_run_description_redirects_unix_habits(self):
+        text = descriptions.RUN_COMMAND_DESCRIPTION_WINDOWS
+        self.assertIn("PowerShell", text)
+        self.assertIn("find", text)
+        self.assertIn("Get-ChildItem", text)
+        self.assertIn("-Recurse", text)
+        self.assertIn("WRONG:", text)
+        self.assertIn("RIGHT:", text)
 
     def test_default_descriptions_stay_prompt_budget_compact(self):
         # descriptions ride on EVERY model call; on CPU boxes prompt eval dominates,
-        # so the default set must stay small (~350 tokens, not the verbose ~620).
-        total = len(
-            descriptions.RUN_COMMAND_DESCRIPTION
-            + descriptions.READ_FILE_DESCRIPTION
+        # so the default set must stay small. Only ONE run_command variant is registered
+        # at a time, so budget the worst case of the two plus the three file tools.
+        total = max(
+            len(descriptions.RUN_COMMAND_DESCRIPTION),
+            len(descriptions.RUN_COMMAND_DESCRIPTION_WINDOWS),
+        ) + len(
+            descriptions.READ_FILE_DESCRIPTION
             + descriptions.WRITE_FILE_DESCRIPTION
+            + descriptions.CREATE_DIRECTORY_DESCRIPTION
         )
-        self.assertLess(total, 1700, f"compact description set grew to {total} chars")
+        self.assertLess(total, 2300, f"compact description set grew to {total} chars")
 
     def test_verbose_variants_keep_the_long_form_teaching(self):
         self.assertIn("NO SHELL - READ THIS FIRST", descriptions.RUN_COMMAND_DESCRIPTION_VERBOSE)
         self.assertIn("RULES:", descriptions.RUN_COMMAND_DESCRIPTION_VERBOSE)
+        self.assertIn("RULES:", descriptions.RUN_COMMAND_DESCRIPTION_WINDOWS_VERBOSE)
         self.assertIn("EMPTY", descriptions.READ_FILE_DESCRIPTION_VERBOSE)
         self.assertIn("Never call write_file again", descriptions.WRITE_FILE_DESCRIPTION_VERBOSE)
         for compact, verbose in (
             (descriptions.RUN_COMMAND_DESCRIPTION, descriptions.RUN_COMMAND_DESCRIPTION_VERBOSE),
+            (descriptions.RUN_COMMAND_DESCRIPTION_WINDOWS, descriptions.RUN_COMMAND_DESCRIPTION_WINDOWS_VERBOSE),
             (descriptions.READ_FILE_DESCRIPTION, descriptions.READ_FILE_DESCRIPTION_VERBOSE),
             (descriptions.WRITE_FILE_DESCRIPTION, descriptions.WRITE_FILE_DESCRIPTION_VERBOSE),
+            (descriptions.CREATE_DIRECTORY_DESCRIPTION, descriptions.CREATE_DIRECTORY_DESCRIPTION_VERBOSE),
         ):
             self.assertLess(len(compact), len(verbose), "compact variant must be the smaller one")
 

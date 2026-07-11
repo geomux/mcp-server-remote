@@ -30,6 +30,25 @@ RUN_COMMAND_DESCRIPTION = (
     "Empty stdout is a real result (ran fine, no matches) - rerunning cannot change it."
 )
 
+RUN_COMMAND_DESCRIPTION_WINDOWS = (
+    "Run ONE allowed PowerShell command on this Windows host and return its output as a receipt.\n"
+    "ONE command only: cmdlet first, then flags and literal absolute Windows paths (C:\\...).\n"
+    "No pipes |  chaining ; &&  redirects > <  variables $  - arguments reach the cmdlet as literal text.\n"
+    "Unix commands (find, ls, cat, grep, mkdir) do NOT exist here. To search for a file or folder:\n"
+    "  WRONG: find C:\\Users -name auth.py\n"
+    "  RIGHT: Get-ChildItem C:\\Users -Recurse -Filter auth.py\n"
+    "DENIED: = refused by policy - do not retry variations. ERROR: = the tool could not run it.\n"
+    "Empty stdout is a real result (ran fine, no matches) - rerunning cannot change it."
+)
+
+CREATE_DIRECTORY_DESCRIPTION = (
+    "Create a folder (directory) on the host, including any missing parent folders.\n"
+    "This is the ONLY way to make a folder - write_file creates files, never folders.\n"
+    "Pass the exact literal absolute path of the folder to create.\n"
+    "One OK: receipt means the folder exists now - never call again to confirm.\n"
+    "DENIED: = path outside allowed roots. ERROR: = the create itself failed."
+)
+
 READ_FILE_DESCRIPTION = (
     "Read a file (utf-8) from the host and return its text as a receipt.\n"
     "Use the exact literal absolute path - ~ and $VARS are NOT expanded.\n"
@@ -40,6 +59,7 @@ READ_FILE_DESCRIPTION = (
 WRITE_FILE_DESCRIPTION = (
     "Write utf-8 text to a file on the host (replacing previous content) and return a receipt.\n"
     "Pass the exact literal absolute path (~ and $VARS are NOT expanded) plus the FULL new content.\n"
+    "Missing parent folders are created automatically. To make an empty folder, use create_directory instead.\n"
     "One OK: receipt means the write is DONE and saved. Never call write_file again just to confirm it.\n"
     "DENIED: = path outside allowed roots. ERROR: = the write itself failed."
 )
@@ -89,7 +109,43 @@ READ_FILE_DESCRIPTION_VERBOSE = (
 WRITE_FILE_DESCRIPTION_VERBOSE = (
     "Write text (utf-8) to a file on the host, replacing any previous content, and return a receipt.\n"
     "- Pass the exact literal path (~ and $VARS are NOT expanded) and the FULL new file content.\n"
+    "- Missing parent folders are created automatically, so writing into a brand-new folder works\n"
+    "  in one call. To create an EMPTY folder (no file inside), use create_directory instead -\n"
+    "  writing a file at a folder's path creates a FILE, never a folder.\n"
     "- One OK: receipt means the write is DONE and saved. Never call write_file again just to\n"
     "  confirm a write that already returned OK:.\n"
     "- DENIED: means the path is outside the allowed roots. ERROR: means the write itself failed."
+)
+
+CREATE_DIRECTORY_DESCRIPTION_VERBOSE = (
+    "Create a folder (directory) on the host and return a receipt.\n"
+    "- This is the ONLY way to make a folder. write_file creates FILES - calling write_file on a\n"
+    "  folder path makes a file with that name, which then BLOCKS creating the real folder.\n"
+    "- Pass the exact literal absolute path (~ and $VARS are NOT expanded). Any missing parent\n"
+    "  folders are created in the same call.\n"
+    "- One OK: receipt means the folder exists - creating it again cannot improve anything.\n"
+    "- DENIED: means the path is outside the allowed roots. ERROR: means the create itself failed."
+)
+
+RUN_COMMAND_DESCRIPTION_WINDOWS_VERBOSE = (
+    "Run ONE allowed PowerShell command on this Windows host and return its output as a receipt.\n"
+    "\n"
+    "HOW COMMANDS RUN HERE:\n"
+    "The allowed commands are PowerShell cmdlets, executed one at a time with every argument\n"
+    "passed as LITERAL text. Shell composition is blocked - none of these do anything:\n"
+    "  pipes: |    redirection: > <    chaining: ; && ||    variables: $env: $HOME\n"
+    "Unix commands (find, ls, cat, grep, mkdir, dir) do NOT exist on this host.\n"
+    "  WRONG: find C:\\Users -name auth.py        (no find on Windows)\n"
+    "  WRONG: Get-ChildItem C:\\ | Select-String x (no pipes)\n"
+    "  RIGHT: Get-ChildItem C:\\Users\\Name -Recurse -Filter auth.py\n"
+    "  RIGHT: Select-String -Path C:\\file.txt -Pattern 'word'\n"
+    "(patterns and wildcards given as ARGUMENTS to a cmdlet are fine - the cmdlet expands them.)\n"
+    "\n"
+    "RULES:\n"
+    "- The cmdlet (first word) must be in the config allowed_commands list (case-insensitive).\n"
+    "- Any argument that looks like a filesystem path is checked against allowed_roots.\n"
+    "- A result starting with DENIED: names exactly what was refused - do not retry variations.\n"
+    "- A result starting with ERROR: means the tool could not run the command at all.\n"
+    "- Empty stdout is a REAL result: the command ran and printed nothing. For a search, that\n"
+    "  means no matches - it is not a failure and rerunning the command will not change it."
 )

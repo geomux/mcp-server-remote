@@ -50,8 +50,8 @@ rules for `DENIED`/`ERROR`:
 
 | File              | Purpose                                                              |
 |-------------------|----------------------------------------------------------------------|
-| `receipt.py`      | `command_receipt`, `read_receipt`, `write_receipt`, `denied`, `error` — pure string builders. |
-| `descriptions.py` | Suggested tool descriptions, including the crucial `run_command` **NO SHELL** warning. The default constants are **compact** (descriptions ride on *every* model call, and on CPU-only boxes prompt evaluation is the dominant cost — measured at ~620 extra prompt tokens for the long forms). `*_VERBOSE` variants keep the long-form teaching text for GPU/API setups. |
+| `receipt.py`      | `command_receipt`, `read_receipt`, `write_receipt`, `mkdir_receipt`, `denied`, `error` — pure string builders. |
+| `descriptions.py` | Suggested tool descriptions, including the crucial `run_command` **NO SHELL** warning, a Windows-specific `RUN_COMMAND_DESCRIPTION_WINDOWS` (steers Unix habits like `find` toward `Get-ChildItem -Recurse`), and `CREATE_DIRECTORY_DESCRIPTION`. The default constants are **compact** (descriptions ride on *every* model call, and on CPU-only boxes prompt evaluation is the dominant cost — measured at ~620 extra prompt tokens for the long forms). `*_VERBOSE` variants keep the long-form teaching text for GPU/API setups. |
 | `selftest.py`     | Offline unittest suite (no network, no model).                       |
 
 Run the selftest from the repo root:
