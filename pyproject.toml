@@ -9,13 +9,13 @@ packages = ["src/mcp_server_remote"]
 # Config project stuff
 [project]
 name = "mcp-server-remote"
-version = "0.2.5"
+version = "0.3.0
 description = "MCP server that serves a remote MCP client."
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.11"
 dependencies = [
-    "fastmcp>=2.0",
+    "fastmcp>=3.0,<4",
     "platformdirs>4.0"
 ]
 
