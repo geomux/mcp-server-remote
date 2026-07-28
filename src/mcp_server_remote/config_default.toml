@@ -11,9 +11,12 @@ port = 9000         # Choose port nginx proxies to
 path = "/mcp"       # Leave this alone. /mcp is default for dependencies.
 
 [auth]
-# generate token using: openssl rand -hex 32
-# !IMPORTANT! provide token to client console config associated with this server
+# !REQUIRED! Server will not start without a real token.
+# Generate a token in terminal by running: openssl rand -hex 32
 token = "paste your token here"
+
+# NOTE: network is handled by nginx (reverse proxy). See mcp-host-configuration repo.
+
 # client console elastic IP and/or domain name
 allowed_origins = ["123.456.789.10", "https://your-domain"]
 
