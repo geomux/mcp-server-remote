@@ -13,6 +13,7 @@ def main():
     """Run MCP Server Instance, open entry point for remote connections, load config, open a session, run tools, return messages to client"""
     config = config_load() # config file dictionary
     server = config["server"] # server table (inside config file dict)
+    auth = resolve_auth(config)
 
     print("_"*50)
     print(f"Starting {server['name']} on {server['host']}:{server['port']}{server['path']}.")
