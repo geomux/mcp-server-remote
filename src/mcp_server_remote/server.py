@@ -16,6 +16,7 @@ def main():
 
     print("_"*50)
     print(f"Starting {server['name']} on {server['host']}:{server['port']}{server['path']}.")
+    print("Auth: bearer token required in config for authentication with client")
     print("_"*50)
 
     ### ---------------------------
@@ -23,7 +24,7 @@ def main():
     ### ---------------------------
     mcp_server = FastMCP(
         name=server["name"],
-        auth=resolve_auth(config)
+        auth=auth
         )
 
     register_tools(mcp_server, config) # register available tools
