@@ -60,6 +60,6 @@ Configure the MCP server first, then confirm the MCP client (see repos below) is
 
 - [x] Create MCP server repo
 - [x] Connect to MCP client locally
-- [ ] Connect to MCP client remotely (over the internet)
+- [x] Connect to MCP client remotely (over the internet)
+- [x] Connect to MCP server remotely with TLS + bearer auth as requirement
 - [ ] Add additional tools to tools.py
-- [ ] Connect to MCP server remotely with TLS + bearer auth as requirement
