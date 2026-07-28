@@ -54,7 +54,7 @@ Configure the MCP server first, then confirm the MCP client (see repos below) is
 
 - [mcp-client-console](https://github.com/geomux/mcp-client-console)
 - [mcp-sandbox-setup](https://github.com/geomux/mcp-sandbox-setup)
-- [mcp-host-setup](https://github.com/geomux/mcp-host-setup)
+- [mcp-host-configuration](https://github.com/geomux/mcp-host-configuration)
 
 ## Project Status
 
