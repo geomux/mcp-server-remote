@@ -28,7 +28,7 @@ def resolve_auth(config: dict) -> StaticTokenVerifier:
         print("\n[ AUTHENTICATION TOKEN TOO WEAK ]")
         print(f"\nToken is {len(token)} characters. Good security needs at least {MIN_TOKEN_LENGTH}.")
         print("\nGenerate an official token: openssl rand -hex 32\n")
-        print()"_"*50)
+        print("_"*50)
 
     return StaticTokenVerifier(
         tokens={
