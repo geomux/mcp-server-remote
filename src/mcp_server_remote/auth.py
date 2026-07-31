@@ -5,7 +5,15 @@ import sys
 from fastmcp.server.auth.providers.jwt import StaticTokenVerifier
 
 PLACEHOLDER = "paste your token here"
-MIN_TOKEN_LENGTH = 32 # openssl rand -hex 32 should create a 64 character token
+MIN_TOKEN_LENGTH = 64 # openssl rand -hex 32 should create a 64 character token
+
+def _token_command() -> str:
+    """
+        Returns a command line the user can copy and paste to generate a bearer token, per OS.
+    """
+    if sys.platform == "win32":
+        return 'python -c "import secrets; print(secrets.token_hex(32))"'
+    return "openssl rand -hex 32"   # macOS and Linux both have openssl command preinstalled
 
 def resolve_auth(config: dict) -> StaticTokenVerifier:
     """
@@ -18,7 +26,8 @@ def resolve_auth(config: dict) -> StaticTokenVerifier:
     if not token or token == PLACEHOLDER:
         print("_"*50)
         print("\n[ AUTHENTICATION NOT CONFIGURED ]")
-        print("\nGenerate a token: openssl rand -hex 32")
+        print(f"\nGenerate an official token:\n")
+        print(f"   {_token_command()}\n")
         print("\nPaste it into [auth] token in your local config.toml, then run again.\n")
         print("_"*50)
         sys.exit(1)
@@ -27,7 +36,8 @@ def resolve_auth(config: dict) -> StaticTokenVerifier:
         print("_"*50)
         print("\n[ AUTHENTICATION TOKEN TOO WEAK ]")
         print(f"\nToken is {len(token)} characters. Good security needs at least {MIN_TOKEN_LENGTH}.")
-        print("\nGenerate an official token: openssl rand -hex 32\n")
+        print(f"\nGenerate an official token:\n")
+        print(f"   {_token_command()}\n")
         print("_"*50)
         sys.exit(1)
 
