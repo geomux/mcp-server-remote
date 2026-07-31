@@ -6,10 +6,13 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["src/mcp_server_remote"]
 
+[tool.hatch.version]
+path = "src/mcp_client_console/__init__.py"
+
 # Config project stuff
 [project]
 name = "mcp-server-remote"
-version = "0.3.0"
+dynamic = "version"
 description = "MCP server that serves a remote MCP client."
 readme = "README.md"
 license = "MIT"
