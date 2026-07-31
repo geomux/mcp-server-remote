@@ -7,6 +7,7 @@ from fastmcp import FastMCP
 from mcp_server_remote.config_loader import config_load
 from mcp_server_remote.auth import resolve_auth
 from mcp_server_remote.tools import register_tools
+from mcp_server_remote import __version__
 
 ### Build the server, set up configuration, register tools, begin listening for client
 def main():
@@ -25,6 +26,7 @@ def main():
     ### ---------------------------
     mcp_server = FastMCP(
         name=server["name"],
+        version=f"v{__version__}",
         auth=auth
         )
 
