@@ -12,7 +12,7 @@ path = "src/mcp_server_remote/__init__.py"
 # Config project stuff
 [project]
 name = "mcp-server-remote"
-dynamic = "version"
+dynamic = ["version"]
 description = "MCP server that serves a remote MCP client."
 readme = "README.md"
 license = "MIT"
