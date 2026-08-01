@@ -13,6 +13,18 @@ from mcp_server_remote._vendor import toolshape
 COMMAND_TIMEOUT_SECONDS = 60    # max time elapsed running each command to protect from hung processes
 MAX_READ_BYTES = 100_000        # max file read in one call to protect LLM context window & tokens
 
+# run_shell's teaching text lives here rather than in _vendor/toolshape: the vendored package is an
+# add-only companion with its own provenance, and this escape hatch is local policy, not part of it.
+RUN_SHELL_DESCRIPTION = (
+    "Run ANY command line on the host through a real shell and return its output as a receipt.\n"
+    "UNRESTRICTED: no allowed-commands list and no allowed_roots check - this bypasses run_command's rules.\n"
+    "SHELL SYNTAX WORKS here (unlike run_command): pipes |  redirects > <  chaining && ;  wildcards *  $VARS all expand.\n"
+    "Windows runs the line in PowerShell; Linux and macOS run it in the system shell.\n"
+    "Prefer run_command for ordinary work - use this only when the task genuinely needs a shell.\n"
+    "Each call costs the user a manual approval, so send ONE complete command line, not a probing sequence.\n"
+    "ERROR: = the tool could not run it. Empty stdout is a real result - rerunning cannot change it."
+)
+
 # a "plain flag" (-Recurse, -Filter) is safe to leave bare in PowerShell; every other argument gets single-quoted literal
 PLAIN_FLAG_PATTERN = re.compile(r"^-[A-Za-z][A-Za-z0-9]*$")
 # catches Windows drive-letter paths (C:\..., d:/...) that have no leading / . ~ for the path check
@@ -197,3 +209,45 @@ def register_tools(mcp_server, config):
             complete_command.stderr[:10_000],
             truncated=len(complete_command.stdout) > MAX_READ_BYTES,
             )
+
+    ### ---------------------------------------
+    ### --- UNRESTRICTED MODEL COMMAND MODE ---
+    ### ---------------------------------------
+    # Registered ONLY when [tools] unrestricted = true. While the flag is false this tool does not exist at all (in the eyes of the model).
+    if config["tools"].get("unrestricted", False):
+
+        @mcp_server.tool(description=RUN_SHELL_DESCRIPTION)
+        def run_shell(command: str) -> str:
+            """
+                Run any command line through a real shell on the host and return its output.
+                NOTE: NO allowed-commands list and NO allowed_roots checks
+                NOTE: Windows runs the line through powershell.exe and Linux/macOS through the system shell.
+            """
+            if not command.strip():
+                return "DENIED: empty command"
+
+            if on_windows:
+                run_arguments = ["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", command]
+                use_shell = False
+            else:
+                run_arguments = command
+                use_shell = True
+
+            try:
+                complete_command = subprocess.run(
+                        run_arguments,
+                        shell = use_shell,
+                        capture_output = True,
+                        text = True,
+                        timeout = COMMAND_TIMEOUT_SECONDS,
+                    )
+            except subprocess.TimeoutExpired:
+                return toolshape.error(f"'{command}' timed out after {COMMAND_TIMEOUT_SECONDS} seconds.")
+
+            return toolshape.command_receipt(
+                command,
+                complete_command.returncode,
+                complete_command.stdout[:MAX_READ_BYTES],
+                complete_command.stderr[:10_000],
+                truncated=len(complete_command.stdout) > MAX_READ_BYTES,
+                )
