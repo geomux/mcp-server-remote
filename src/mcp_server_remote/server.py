@@ -4,7 +4,7 @@
 ### ...lots of notes below because dense...
 
 from fastmcp import FastMCP
-from mcp_server_remote.config_loader import config_load
+from mcp_server_remote.config_loader import config_load, config_path
 from mcp_server_remote.auth import resolve_auth
 from mcp_server_remote.tools import register_tools
 from mcp_server_remote import __version__
@@ -17,8 +17,9 @@ def main():
     auth = resolve_auth(config)
 
     print("_"*50)
-    print(f"Starting {server['name']} on {server['host']}:{server['port']}{server['path']}.")
+    print(f"Starting {server['name']} v{__version__} on {server['host']}:{server['port']}{server['path']}.")
     print("Auth: bearer token required in config for authentication with client")
+    print(f"Unrestricted shell access (for MODEL): {'ON' if config['tools']['unrestricted'] else 'off'}")
     print("_"*50)
 
     ### ---------------------------
