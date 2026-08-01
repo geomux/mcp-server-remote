@@ -4,22 +4,28 @@
 ### This default file was created on first package run.
 ### Edit the values below, save, and run the package again to begin.
 
+[auth]
+# !REQUIRED! Server will not start without a real token.
+# Generate a token in terminal by running: openssl rand -hex 32
+token = "paste your token here"
+
 [server]
 name = "Box_1"      # Label for this machine
 host = "127.0.0.1"  # IP/Domain for this machine
 port = 9000         # Choose port nginx proxies to
 path = "/mcp"       # Leave this alone. /mcp is default for dependencies.
 
-[auth]
-# !REQUIRED! Server will not start without a real token.
-# Generate a token in terminal by running: openssl rand -hex 32
-token = "paste your token here"
+
+
+
+
 
 # NOTE: network is handled by nginx (reverse proxy). See mcp-host-configuration repo.
 
 [tools] # configurable tool permissions (uses principle of least privileged)
-# require human [y/n] approval on client side before any tool or command tagged destructive runs
-confirm_destructive_actions = true
+
+unrestricted = false # true = allows the model full access to all shell commands on the host box.
+
 # "/" allows full machine control (REMOVE FOR XTRA SECURITY), "/123abc" specifies actual path
 allowed_roots = [
     "/",
