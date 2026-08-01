@@ -214,7 +214,7 @@ def register_tools(mcp_server, config):
     ### --- UNRESTRICTED MODEL COMMAND MODE ---
     ### ---------------------------------------
     # Registered ONLY when [tools] unrestricted = true. While the flag is false this tool does not exist at all (in the eyes of the model).
-    if config["tools"].get("unrestricted", False):
+    if config["tools"]["unrestricted"]:
 
         @mcp_server.tool(description=RUN_SHELL_DESCRIPTION)
         def run_shell(command: str) -> str:
