@@ -39,7 +39,7 @@ def config_defaults() -> dict:
     """
         Reads the packaged config_default.toml that comes with this package.
     """
-    template = files("mcp_server_remote").joinpath(config_default.toml)
+    template = files("mcp_server_remote").joinpath("config_default.toml")
     return tomllib.loads(template.read_text())
 
 def config_merge(defaults: dict, overrides: dict) -> dict:
@@ -61,7 +61,7 @@ def config_load() -> dict:
     config_text = config_file.read_text(encoding="utf-8-sig")
     user_config = tomllib.loads(config_text)
     config_dictionary = config_merge(config_defaults(), user_config)
-    config_dictionary = tomllib.loads(config_text)
+
     # Configure machine root path allowed across multiple operating systems
     allowed_roots = config_dictionary["tools"]["allowed_roots"]
     if "*" in allowed_roots:
