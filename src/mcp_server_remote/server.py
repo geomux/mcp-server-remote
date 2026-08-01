@@ -18,7 +18,8 @@ def main():
 
     print("_"*50)
     print(f"Starting {server['name']} v{__version__} on {server['host']}:{server['port']}{server['path']}.")
-    print("Auth: bearer token required in config for authentication with client")
+    print(f"Config: {config_path()}\n")
+    print("Auth: bearer token required in config for authentication with client\n")
     print(f"Unrestricted shell access (for MODEL): {'ON' if config['tools']['unrestricted'] else 'off'}")
     print("_"*50)
 
