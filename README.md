@@ -50,6 +50,16 @@ path = "/mcp"       # Leave this alone. /mcp is default for dependencies.
 
 Configure the MCP server first, then confirm the MCP client (see repos below) is configured to connect to it. The server accepts the connection, performs the MCP handshake, and lists the available tools to the client.
 
+Configure UNRESTRICTED access in the Config File for the model as desired.
+Setting unrestricted = true will bypass all [tools.commands] allowed commands.
+**Example**
+```toml
+[tools]
+
+unrestricted = true
+```
+**Only recommended within a sandbox container environment due to prompt injection/model error risk**
+
 ## Related / Required Repos
 
 - [mcp-client-console](https://github.com/geomux/mcp-client-console)
