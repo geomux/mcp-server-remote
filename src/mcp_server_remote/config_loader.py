@@ -35,10 +35,32 @@ def config_create() -> Path:
         sys.exit(1)
     return config_file
 
+def config_defaults() -> dict:
+    """
+        Reads the packaged config_default.toml that comes with this package.
+    """
+    template = files("mcp_server_remote").joinpath(config_default.toml)
+    return tomllib.loads(template.read_text())
+
+def config_merge(defaults: dict, overrides: dict) -> dict:
+    """
+        Merges user added values into the package default values (user values overwrite defaults).
+    """
+    merged = dict(defaults)
+    for key, value in overrides.items():
+        if isinstance(value, dict) and isinstance(merged.get(key), dict):
+            merged[key] = config_merge(merged[key], value)
+        else:
+            merged[key] = value
+    return merged
+
+
 ### Load settings from Config File into Python dictionary
 def config_load() -> dict:
     config_file = config_create()
     config_text = config_file.read_text(encoding="utf-8-sig")
+    user_config = tomllib.loads(config_text)
+    config_dictionary = config_merge(config_defaults(), user_config)
     config_dictionary = tomllib.loads(config_text)
     # Configure machine root path allowed across multiple operating systems
     allowed_roots = config_dictionary["tools"]["allowed_roots"]
