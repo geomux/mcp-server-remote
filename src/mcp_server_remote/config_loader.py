@@ -64,7 +64,7 @@ def config_load() -> dict:
 
     # Configure machine root path allowed across multiple operating systems
     allowed_roots = config_dictionary["tools"]["allowed_roots"]
-    if "*" in allowed_roots:
+    if "*" in allowed_roots or "/" in allowed_roots:
         operatingsystem_root = os.path.abspath(os.sep)
         config_dictionary["tools"]["allowed_roots"] = [operatingsystem_root]
     # Configure machine commands allowed across multiple operating systems
