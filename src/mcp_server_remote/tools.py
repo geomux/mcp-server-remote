@@ -3,8 +3,6 @@
 # NOTE: MAJOR benefit from beefing up docstrings for LLM context since they are passed through the functions that define the tools
 
 import platform
-import re
-import shlex
 import subprocess
 from pathlib import Path
 from mcp_server_remote._vendor import toolshape
@@ -13,32 +11,21 @@ from mcp_server_remote._vendor import toolshape
 COMMAND_TIMEOUT_SECONDS = 60    # max time elapsed running each command to protect from hung processes
 MAX_READ_BYTES = 100_000        # max file read in one call to protect LLM context window & tokens
 
-# run_shell's teaching text lives here rather than in _vendor/toolshape: the vendored package is an
+# run_command's teaching text lives here rather than in _vendor/toolshape: the vendored package is an
 # add-only companion with its own provenance, and this escape hatch is local policy, not part of it.
-RUN_SHELL_DESCRIPTION = (
+RUN_COMMAND_DESCRIPTION = (
     "Run ANY command line on the host through a real shell and return its output as a receipt.\n"
-    "UNRESTRICTED: no allowed-commands list and no allowed_roots check - this bypasses run_command's rules.\n"
-    "SHELL SYNTAX WORKS here (unlike run_command): pipes |  redirects > <  chaining && ;  wildcards *  $VARS all expand.\n"
+    "SHELL SYNTAX WORKS here: pipes |  redirects > <  chaining && ;  wildcards *  $VARS all expand.\n"
     "Windows runs the line in PowerShell; Linux and macOS run it in the system shell.\n"
-    "Prefer run_command for ordinary work - use this only when the task genuinely needs a shell.\n"
     "Each call costs the user a manual approval, so send ONE complete command line, not a probing sequence.\n"
     "ERROR: = the tool could not run it. Empty stdout is a real result - rerunning cannot change it."
 )
 
-# a "plain flag" (-Recurse, -Filter) is safe to leave bare in PowerShell; every other argument gets single-quoted literal
-PLAIN_FLAG_PATTERN = re.compile(r"^-[A-Za-z][A-Za-z0-9]*$")
-# catches Windows drive-letter paths (C:\..., d:/...) that have no leading / . ~ for the path check
-DRIVE_LETTER_PATTERN = re.compile(r"^[A-Za-z]:")
-
-
 ### all tools register on MCP server through register_tools()
 def register_tools(mcp_server, config):
     """Register MCP tools with MCP server instance and config file arguments"""
-    os_key = {"Linux": "linux", "Windows": "windows", "Darwin": "macos"}[platform.system()]
-    allowed_commands = config["tools"]["commands"][os_key]
     allowed_roots = config["tools"]["allowed_roots"]
-    on_windows = os_key == "windows"
-
+    on_windows = platform.system() == "Windows"
 
     def path_is_allowed(target_object: Path, allowed_roots: list[str]) -> bool:
         """Check if target_object filepath argument passed is under a root that is allowed to be acccessed"""
@@ -115,92 +102,36 @@ def register_tools(mcp_server, config):
         except Exception as error:
             return f"ERROR: Cannot create folder {target_object}: {error}"
 
-    # Windows gets its own run_command teaching text: the allowed commands there are PowerShell cmdlets
-    run_command_description = (
-        toolshape.RUN_COMMAND_DESCRIPTION_WINDOWS if on_windows else toolshape.RUN_COMMAND_DESCRIPTION
-    )
-
-    @mcp_server.tool(description=run_command_description)
+    ### ---------------------------------------
+    ### --- UNRESTRICTED MODEL COMMAND MODE ---
+    ### ---------------------------------------
+    @mcp_server.tool(description=RUN_COMMAND_DESCRIPTION)
     def run_command(command: str) -> str:
         """
-            Run one allowed command on the host machine and return its output.
-            NOTE: The command's binary (first word) must be in the config allowed_commands list.
-            NOTE: Flags and non-path arguments are passed through unchecked. Any argument that looks like a filesystem path (starts with /, ~, ., a drive letter, or contains a slash) is checked against allowed_roots.
-            NOTE: On Windows the allowed commands are PowerShell cmdlets. They run one at a time through powershell.exe with every argument passed as literal quoted text - no pipes, chaining, or variable expansion is possible.
-            NOTE: If a command or path is denied, tool will return why.
+            Run any command line through a real shell on the host and return its output.
+            NOTE: NO allowed-commands list and NO allowed_roots checks
+            NOTE: Windows runs the line through powershell.exe and Linux/macOS through the system shell.
         """
-        try:
-            # posix=False on Windows keeps backslashes in paths like C:\Users intact (posix mode strips them as escapes)
-            tokens = shlex.split(command.strip(), posix=not on_windows)
-        except ValueError as error:
-            return f"ERROR: could not parse command: {error}"
-
-        if not tokens:
+        if not command.strip():
             return "DENIED: empty command"
 
         if on_windows:
-            # non-posix shlex keeps surrounding quotes attached to tokens - strip matching pairs
-            tokens = [
-                token[1:-1] if len(token) >= 2 and token[0] == token[-1] and token[0] in "\"'" else token
-                for token in tokens
-            ]
-
-        cmd_binary = tokens[0]
-        if on_windows:
-            # Windows commands and cmdlets are case-insensitive - accept get-childitem for Get-ChildItem
-            canonical_names = {name.lower(): name for name in allowed_commands}
-            cmd_binary = canonical_names.get(cmd_binary.lower())
-            if cmd_binary is None:
-                return toolshape.denied(f"'{tokens[0]}' is not allowed.", allowed=allowed_commands)
-        elif cmd_binary not in allowed_commands:
-            return toolshape.denied(f"'{cmd_binary}' is not allowed.", allowed=allowed_commands)
-
-        # check to see if any arguments are paths/look like paths
-        for token in tokens[1:]:
-            if token.startswith("-"):
-                continue # argument is a flag
-            looks_like_path = (
-                "/" in token
-                or "\\" in token
-                or token.startswith("~")
-                or token.startswith(".")
-                or DRIVE_LETTER_PATTERN.match(token) is not None
-            )
-            if not looks_like_path:
-                continue # argument is not a path
-            target_object = Path(token).expanduser().resolve()
-            if not path_is_allowed(target_object, allowed_roots):
-                return f"DENIED: path '{target_object}' is not within filepaths allowed by config file."
-
-        if on_windows:
-            # PowerShell cmdlets (Get-ChildItem etc.) are not .exe binaries - they only exist inside PowerShell.
-            # Preserve the no-shell contract while using one: the cmdlet name comes from the allowlist, plain
-            # -Flags pass bare, and EVERY other argument is single-quoted literal ('' escapes a quote inside).
-            # PowerShell expands nothing inside single quotes, so pipes/chaining/$vars in arguments stay inert text.
-            rendered_arguments = []
-            for token in tokens[1:]:
-                if PLAIN_FLAG_PATTERN.match(token):
-                    rendered_arguments.append(token)
-                else:
-                    rendered_arguments.append("'" + token.replace("'", "''") + "'")
-            run_arguments = [
-                "powershell.exe", "-NoProfile", "-NonInteractive", "-Command",
-                " ".join([cmd_binary] + rendered_arguments),
-            ]
+            run_arguments = ["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", command]
+            use_shell = False
         else:
-            run_arguments = tokens
+            run_arguments = command
+            use_shell = True
 
         try:
             complete_command = subprocess.run(
                     run_arguments,
+                    shell = use_shell,
                     capture_output = True,
                     text = True,
                     timeout = COMMAND_TIMEOUT_SECONDS,
                 )
         except subprocess.TimeoutExpired:
             return toolshape.error(f"'{command}' timed out after {COMMAND_TIMEOUT_SECONDS} seconds.")
-        except FileNotFoundError:
-            return f"ERROR: '{cmd_binary}' is allowed but not found on this remote machine."
 
         return toolshape.command_receipt(
             command,
@@ -209,45 +140,3 @@ def register_tools(mcp_server, config):
             complete_command.stderr[:10_000],
             truncated=len(complete_command.stdout) > MAX_READ_BYTES,
             )
-
-    ### ---------------------------------------
-    ### --- UNRESTRICTED MODEL COMMAND MODE ---
-    ### ---------------------------------------
-    # Registered ONLY when [tools] unrestricted = true. While the flag is false this tool does not exist at all (in the eyes of the model).
-    if config["tools"]["unrestricted"]:
-
-        @mcp_server.tool(description=RUN_SHELL_DESCRIPTION)
-        def run_shell(command: str) -> str:
-            """
-                Run any command line through a real shell on the host and return its output.
-                NOTE: NO allowed-commands list and NO allowed_roots checks
-                NOTE: Windows runs the line through powershell.exe and Linux/macOS through the system shell.
-            """
-            if not command.strip():
-                return "DENIED: empty command"
-
-            if on_windows:
-                run_arguments = ["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", command]
-                use_shell = False
-            else:
-                run_arguments = command
-                use_shell = True
-
-            try:
-                complete_command = subprocess.run(
-                        run_arguments,
-                        shell = use_shell,
-                        capture_output = True,
-                        text = True,
-                        timeout = COMMAND_TIMEOUT_SECONDS,
-                    )
-            except subprocess.TimeoutExpired:
-                return toolshape.error(f"'{command}' timed out after {COMMAND_TIMEOUT_SECONDS} seconds.")
-
-            return toolshape.command_receipt(
-                command,
-                complete_command.returncode,
-                complete_command.stdout[:MAX_READ_BYTES],
-                complete_command.stderr[:10_000],
-                truncated=len(complete_command.stdout) > MAX_READ_BYTES,
-                )

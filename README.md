@@ -50,15 +50,7 @@ path = "/mcp"       # Leave this alone. /mcp is default for dependencies.
 
 Configure the MCP server first, then confirm the MCP client (see repos below) is configured to connect to it. The server accepts the connection, performs the MCP handshake, and lists the available tools to the client.
 
-Configure UNRESTRICTED access in the Config File for the model as desired.
-Setting unrestricted = true will bypass all [tools.commands] allowed commands.
-**Example**
-```toml
-[tools]
-
-unrestricted = true
-```
-**Only recommended within a sandbox container environment due to prompt injection/model error risk**
+**Model will have UNRESTRICTED shell access on remote host. Recommended to only run the MCP Server in a sandboxed environment.**
 
 ## Related / Required Repos
 
@@ -72,4 +64,5 @@ unrestricted = true
 - [x] Connect to MCP client locally
 - [x] Connect to MCP client remotely (over the internet)
 - [x] Connect to MCP server remotely with TLS + bearer auth as requirement
-- [ ] Add additional tools to tools.py
+- [x] Add additional tools to tools.py
+- [x] Add CORS middleware integration so browser-based MCP clients can connect
